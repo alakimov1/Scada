@@ -21,9 +21,6 @@ namespace Project1.Controllers.EventsController
         [HttpGet]
         public IActionResult Get(EventsQuery query)
         {
-            if (query.VariableId == null)
-                return new BadRequestResult();
-
             DateTime? start = query.Start == null
                 ? null
                 : DateTime.Parse(query.Start);

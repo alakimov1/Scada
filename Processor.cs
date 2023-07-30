@@ -27,7 +27,7 @@ namespace Project1
         {
             Variable? variable = variableId == null
                 ?null
-                : _variables.FirstOrDefault(_ => _.Id == variableId); 
+                : _variables.FirstOrDefault(_ => _.Id == variableId);
 
             return _databaseWorker.ReadEventsHistory(_events, variable, start, end, type, count);
         }
