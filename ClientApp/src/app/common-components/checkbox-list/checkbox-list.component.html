@@ -1,0 +1,12 @@
+<div class="btn-group">
+  <label
+         *ngFor="let item of checkboxListModel; let i = index"
+         class="btn btn-primary"
+         [class.active]="item?.value"
+         [style.background-color]="item.color"
+         (click) ="change(item.id)"
+         btnCheckbox
+         tabindex="0"
+         role="button"
+         >{{item.name}}</label>
+</div>

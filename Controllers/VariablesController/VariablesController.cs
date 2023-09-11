@@ -1,24 +1,29 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Cors;
+using Microsoft.AspNetCore.Http.HttpResults;
+using Microsoft.AspNetCore.Mvc;
 using Project1.Models;
+using Project1.Processors;
 
 namespace Project1.Controllers.VariablesController
 {
     [ApiController]
-    [Route("api/[controller]")]
     public class VariablesController : ControllerBase
     {
         private readonly ILogger<VariablesController> _logger;
-        private readonly Processor _processor;
+        private Processor? _processor=> Processor.Instance;
 
-        public VariablesController(Processor processor, ILogger<VariablesController> logger)
+        public VariablesController(ILogger<VariablesController> logger)
         {
-            _processor = processor;
             _logger = logger;
         }
 
-        [HttpGet]
-        public IActionResult Get([FromBody] int[] ids = null)
+        [HttpPost]
+        [Route("api/[controller]/get")]
+        public IActionResult Get([FromBody] int[]? ids = null)
         {
+            if (_processor == null)
+                return StatusCode(StatusCodes.Status500InternalServerError);
+
             var result = _processor.GetVariables(ids);
             return result == null
                 ? new NotFoundResult()
@@ -26,13 +31,24 @@ namespace Project1.Controllers.VariablesController
         }
 
         [HttpPost]
-        public IActionResult Post([FromBody] Variable[] variables)
+        [Route("api/[controller]/change")]
+        public IActionResult Change([FromBody] Variable[] variables)
         {
+            if (_processor == null)
+                return StatusCode(StatusCodes.Status500InternalServerError);
+
             if (variables == null)
                 return new BadRequestResult();
 
             _processor.ChangeVariables(variables.ToList());
             return new OkResult();
+        }
+
+        [HttpGet]
+        [Route("api/[controller]/settings")]
+        public IActionResult GetSettings()
+        {
+
         }
     }
 }

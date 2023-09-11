@@ -1,0 +1,14 @@
+<div class="columns mt-2">
+  <div class="column col-12">
+    <ngx-table [data]="_data" [configuration]="configuration" [columns]="columns"> </ngx-table>
+  </div>
+</div>
+<ng-template #startDateTpl let-row>
+  <div>{{ row.startText }}</div>
+</ng-template>
+<ng-template #endDateTpl let-row>
+  <div>{{ row.endText }}</div>
+</ng-template>
+<ng-template #typeTpl let-row>
+  <div [style.background-color]="row.color">{{ row.type }}</div>
+</ng-template>

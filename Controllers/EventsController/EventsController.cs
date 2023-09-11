@@ -1,26 +1,30 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using Project1.Models;
+using Project1.Processors;
 
 // For more information on enabling Web API for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
 
 namespace Project1.Controllers.EventsController
 {
-    [Route("api/[controller]")]
     [ApiController]
     public class EventsController : ControllerBase
     {
         private readonly ILogger<EventsController> _logger;
-        private readonly Processor _processor;
+        private Processor? _processor => Processor.Instance;
 
-        public EventsController(Processor processor, ILogger<EventsController> logger)
+        public EventsController(ILogger<EventsController> logger)
         {
-            _processor = processor;
             _logger = logger;
         }
 
-        [HttpGet]
-        public IActionResult Get(EventsQuery query)
+        [HttpPost]
+        [Route("api/[controller]/get")]
+        public async Task<IActionResult> Get([FromBody]EventsQuery query)
         {
+            if (_processor == null
+                || _processor.EventsProcessor == null)
+                return StatusCode(StatusCodes.Status500InternalServerError);
+
             DateTime? start = query.Start == null
                 ? null
                 : DateTime.Parse(query.Start);
@@ -29,12 +33,32 @@ namespace Project1.Controllers.EventsController
                 ? null
                 : DateTime.Parse(query.End);
 
-            EventType? type = query.Type == null
-                ? null
-                : (EventType)query.Type;
+            var eventTypes = await _processor.EventsProcessor.GetEventTypes();
 
-            var result = _processor.GetEventHistories(query.VariableId, start, end, type, query.Count);
+            if (eventTypes == null)
+                return StatusCode(StatusCodes.Status500InternalServerError);
+
+            List<int>? type = query.Type == null
+                ? null
+                : eventTypes!.Where(_ => query.Type.Contains((int)_.Id)).Select(_=>(int)_.Id).ToList();
+
+            var result =  _processor.EventsProcessor.GetEventHistories(query.VariableId, start, end, type, query.Count);
             return  result==null
+                ? new NotFoundResult()
+                : new JsonResult(result);
+        }
+
+        [HttpGet]
+        [Route(("api/[controller]/get-event-types"))]
+        public async Task<IActionResult> GetEventTypes()
+        {
+            if (_processor == null
+                || _processor.EventsProcessor == null)
+                return StatusCode(StatusCodes.Status500InternalServerError);
+
+            var result = _processor.EventsProcessor.GetEventTypes();
+
+            return result == null
                 ? new NotFoundResult()
                 : new JsonResult(result);
         }

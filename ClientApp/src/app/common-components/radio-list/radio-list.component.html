@@ -1,0 +1,11 @@
+<div class="btn-group">
+  <label
+         *ngFor="let item of _radioListModel; let i = index"
+         class="btn btn-primary"
+         [class.active]="item.id==selected"
+         (click) ="change(item.id)"
+         btnCheckbox
+         tabindex="0"
+         role="button"
+         >{{item.name}}</label>
+</div>

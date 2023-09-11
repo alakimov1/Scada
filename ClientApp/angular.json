@@ -31,7 +31,8 @@
             ],
             "styles": [
               "node_modules/bootstrap/dist/css/bootstrap.min.css",
-              "src/styles.css"
+              "src/styles.scss",
+              "node_modules/ngx-easy-table/style.css"
             ],
             "scripts": []
           },
@@ -131,6 +132,6 @@
         }
       }
     }
-  },
-  "defaultProject": "Project1"
+  }
+  //"defaultProject": "Project1"
 }

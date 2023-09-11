@@ -1,4 +1,6 @@
-using Project1;
+using Project1.Database;
+using Project1.Processors;
+using System.ComponentModel;
 using System.Runtime.CompilerServices;
 
 namespace Project1
@@ -11,7 +13,23 @@ namespace Project1
 
             // Add services to the container.
 
+            var MyAllowSpecificOrigins = "_myAllowSpecificOrigins";
+
+            builder.Services.AddCors(options =>
+            {
+                options.AddDefaultPolicy(
+                                builder =>
+                                {
+                                    builder.AllowAnyOrigin()
+                                     .AllowAnyMethod()
+                                     .AllowAnyHeader()
+                                     ;
+                                });
+            });
+
             builder.Services.AddControllersWithViews();
+            builder.Services.AddHostedService<ProcessorBackgroundWorker>();
+            builder.Services.AddCors();
 
             var app = builder.Build();
 
@@ -25,11 +43,11 @@ namespace Project1
             app.UseHttpsRedirection();
             app.UseStaticFiles();
             app.UseRouting();
-
+            app.UseCors();
 
             app.MapControllerRoute(
                 name: "default",
-                pattern: "{controller}/{action=Index}/{id?}");
+                pattern: "api/{controller}/{action=Index}/{id?}");
 
             app.MapFallbackToFile("index.html");
             

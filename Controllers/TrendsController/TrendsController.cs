@@ -1,39 +1,55 @@
 ﻿using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Project1.Processors;
 
 namespace Project1.Controllers.TrendsController
 {
     [ApiController]
-    [Route("api/[controller]")]
     public class TrendsController :ControllerBase
     {
         private readonly ILogger<TrendsController> _logger;
-        private readonly Processor _processor;
+        private Processor? _processor => Processor.Instance;
 
-        public TrendsController(Processor processor, ILogger<TrendsController> logger)
+        public TrendsController(ILogger<TrendsController> logger)
         {
-            _processor = processor;
             _logger = logger;
         }
 
-        // GET: TrendsController
         [HttpGet]
-        public IActionResult Get(TrendsQuery query)
+        [Route("api/[controller]/get-variables")]
+        public IActionResult Get()
         {
+            if (_processor == null)
+                return StatusCode(StatusCodes.Status500InternalServerError);
+
+            return new JsonResult(_processor.GetVariables()?.Where(_=>_.TrendingPeriod>0).ToArray());
+        }
+
+        [HttpPost]
+        [Route("api/[controller]/get")]
+        public async Task<IActionResult> Post([FromBody] TrendsQuery query)
+        {
+            if (_processor == null)
+                return StatusCode(StatusCodes.Status500InternalServerError);
+
             DateTime? start = query.Start == null
                 ? null
-                : DateTime.Parse(query.Start);
+                : DateTime.Parse(query.Start,null,System.Globalization.DateTimeStyles.RoundtripKind);
             DateTime? end = query.End == null
                 ? null
                 : DateTime.Parse(query.End);
-            var variables = _processor.GetVariables(query.VariablesIds);
+
+            if (query.VariableId == null)
+                return new BadRequestResult();
+
+            var variables = _processor.GetVariables( new int[] { (int)query.VariableId });
 
             if (variables == null
                 || variables.Count == 0)
                 return new NotFoundResult();
 
-            var events = _processor.GetEvents(variables);
-            var trends = _processor.GetTrend(variables, start, end);
+            var events = await _processor.EventsProcessor.GetEvents(variables);
+            var trends = await _processor.TrendsProcessor.ReadTrends(variables, start, end);
             var responce = new List<TrendsResponce>();
 
             foreach(var variable in variables)
@@ -41,18 +57,23 @@ namespace Project1.Controllers.TrendsController
                 if (variable == null) 
                     continue;
 
+                var eventLines = new List<TrendsResponceEventLine>();
+
+                foreach(var variableEvent in events?.Where(_=>_.Variable.Id==variable.Id))
+                {
+                    eventLines.Add(new TrendsResponceEventLine()
+                    { 
+                        EventType = variableEvent.Type,
+                        Value = Convert.ToDouble(variableEvent.Limit)
+                    }
+                    );
+                }
+
                 responce.Add(new TrendsResponce()
-                    {
-                        Trend = trends?.FirstOrDefault(_ => _.Variable.Id == variable.Id),
-                        Alarms = events?
-                            .Where(_ => _.Variable.Id == variable.Id && _.Type == Models.EventType.Alarm)?
-                            .Select(_ => (double)_.Limit)?
-                            .ToArray(),
-                        Warnings = events?
-                            .Where(_ => _.Variable.Id == variable.Id && _.Type == Models.EventType.Warning)?
-                            .Select(_ => (double)_.Limit)?
-                            .ToArray()
-                    });
+                {
+                    Trend = trends?.FirstOrDefault(_ => _.Variable.Id == variable.Id),
+                    EventLines = eventLines.ToArray()
+                }) ;
             }
 
             return responce==null ||responce.Count==0

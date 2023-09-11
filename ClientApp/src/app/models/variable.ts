@@ -10,12 +10,12 @@ export enum VariableType {
 
 export class Variable {
   constructor(
-    public Id: number,
-    public Address: number,
-    public Type: VariableType,
-    public Name: string,
-    public Value: object,
-    public Active: number,
-    public TrendingPeriod:number
+    public id: number,
+    public address: number,
+    public type: VariableType,
+    public name: string,
+    public value: object,
+    public active: number,
+    public trendingPeriod:number
   ) { }
 }

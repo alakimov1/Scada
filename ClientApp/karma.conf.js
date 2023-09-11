@@ -32,6 +32,11 @@ module.exports = function (config) {
         { type: 'text-summary' }
       ]
     },
+    resolve: {
+      fallback: {
+        util: require.resolve("util/")
+      }
+    },
     reporters: ['progress', 'kjhtml'],
     port: 9876,
     colors: true,
@@ -42,3 +47,4 @@ module.exports = function (config) {
     restartOnFileChange: true
   });
 };
+

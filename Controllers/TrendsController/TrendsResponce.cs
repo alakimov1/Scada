@@ -2,10 +2,15 @@
 
 namespace Project1.Controllers.TrendsController
 {
+    public class TrendsResponceEventLine
+    {
+        public EventType? EventType { get; set; }
+        public double? Value { get; set; }
+    }
+
     public class TrendsResponce
     {
-        public double[]? Warnings { get; set; }
-        public double[]? Alarms { get; set; }
+        public TrendsResponceEventLine[]? EventLines { get; set; }
         public Trend? Trend { get; set; }
     }
 }

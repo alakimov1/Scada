@@ -1,11 +1,5 @@
 ﻿namespace Project1.Models
 {
-    public enum EventType
-    {
-        Alarm,
-        Warning,
-        Event
-    }
     public enum EventVariableComparison
     {
         None,

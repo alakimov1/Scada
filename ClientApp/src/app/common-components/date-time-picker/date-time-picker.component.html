@@ -1,0 +1,17 @@
+<div class="container">
+  {{text}}
+  <div class="row">
+    <div class="col-xs-6 col-6 col-md-2" style="min-width:fit-content">
+      <input type="text"
+             class="form-control"
+             placeholder="Дата"
+             [minDate]="minDate"
+             [maxDate]="maxDate"
+             bsDatepicker
+             [(ngModel)]="date"/>
+    </div>
+    <div class="col-xs-6 col-6 col-md-2">
+      <timepicker [(ngModel)]="time" [showMeridian]="isMeridian" [showSpinners]="false"></timepicker>
+    </div>
+  </div>
+</div>
