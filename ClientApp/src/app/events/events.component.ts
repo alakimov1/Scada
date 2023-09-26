@@ -42,7 +42,7 @@ export class EventsComponent {
   getEventTypes() {
     this.eventTypes = [];
     this.httpService
-      .getEventTypes().toPromise().then(
+      .getEventTypes().then(
         res => {
           res.forEach((eventType: any) => {
             this.eventTypes?.push(
@@ -61,7 +61,7 @@ export class EventsComponent {
     this._eventsData = [];
     this.eventsData = [];
     this.httpService
-      .getEvents(undefined, this.startDate, this.endDate, this.selectedEventTypes?.map(_ => _.id)).toPromise().then(
+      .getEvents(undefined, this.startDate, this.endDate, this.selectedEventTypes?.map(_ => _.id)).then(
         res => {
           res.forEach((ev: any) => {
             let startDate = ev?.startTime

@@ -11,10 +11,6 @@ namespace Project1
         {
             var builder = WebApplication.CreateBuilder(args);
 
-            // Add services to the container.
-
-            var MyAllowSpecificOrigins = "_myAllowSpecificOrigins";
-
             builder.Services.AddCors(options =>
             {
                 options.AddDefaultPolicy(
@@ -48,11 +44,7 @@ namespace Project1
             app.MapControllerRoute(
                 name: "default",
                 pattern: "api/{controller}/{action=Index}/{id?}");
-
-            app.MapFallbackToFile("index.html");
             
-            //Task.Run(()=>new Processor());
-
             app.Run();
 
         }

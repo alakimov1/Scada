@@ -17,7 +17,7 @@ namespace Project1.Database
             }
         }
 
-        private static object _getValueFromString(string value,VariableType type)
+        public static object GetValueFromString(string value,VariableType type)
         {
             switch (type)
             {

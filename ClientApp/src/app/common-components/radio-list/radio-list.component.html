@@ -1,7 +1,7 @@
 <div class="btn-group">
   <label
          *ngFor="let item of _radioListModel; let i = index"
-         class="btn btn-primary"
+         class="btn btn-outline-primary"
          [class.active]="item.id==selected"
          (click) ="change(item.id)"
          btnCheckbox

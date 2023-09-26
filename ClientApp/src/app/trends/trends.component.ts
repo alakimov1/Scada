@@ -44,7 +44,7 @@ export class TrendsComponent {
     if (!this.variableId)
       return;
     this._trends = [];
-    this.httpService.getTrends(this.variableId, this.startDate, this.endDate).toPromise().then(
+    this.httpService.getTrends(this.variableId, this.startDate, this.endDate).then(
       res => {
         res.forEach((data: any) => {
           this._trends.push(
@@ -72,7 +72,7 @@ export class TrendsComponent {
 
   getVariableList() {
     this.variablesList = [];
-    this.httpService.getTrendingVariables().toPromise().then(
+    this.httpService.getTrendingVariables().then(
       res => {
         res.forEach((variable: Variable) => {
           this.variablesList?.push(

@@ -2,8 +2,6 @@
 using Project1.Models;
 using Project1.Processors;
 
-// For more information on enabling Web API for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
-
 namespace Project1.Controllers.EventsController
 {
     [ApiController]
@@ -42,7 +40,9 @@ namespace Project1.Controllers.EventsController
                 ? null
                 : eventTypes!.Where(_ => query.Type.Contains((int)_.Id)).Select(_=>(int)_.Id).ToList();
 
-            var result =  _processor.EventsProcessor.GetEventHistories(query.VariableId, start, end, type, query.Count);
+            var result = await _processor
+                                .EventsProcessor
+                                .GetEventHistories(query.VariableId, start, end, type, query.Count);
             return  result==null
                 ? new NotFoundResult()
                 : new JsonResult(result);
@@ -56,7 +56,7 @@ namespace Project1.Controllers.EventsController
                 || _processor.EventsProcessor == null)
                 return StatusCode(StatusCodes.Status500InternalServerError);
 
-            var result = _processor.EventsProcessor.GetEventTypes();
+            var result = await _processor.EventsProcessor.GetEventTypes();
 
             return result == null
                 ? new NotFoundResult()

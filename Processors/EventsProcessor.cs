@@ -20,22 +20,35 @@ namespace Project1.Processors
         public async Task Init(List<Variable> variables)
         {
             _variables = variables;
-            _eventTypes = await _databaseWorker.ReadEventTypes();
-            _events = await _databaseWorker.ReadEvents(variables, _eventTypes);
-            _eventsHistories = await _databaseWorker.ReadOpenedEventsHistory(_events);
+
+            if (variables == null)
+                return;
+
+            _eventTypes = await _databaseWorker.DatabaseWorkerEvents.ReadEventTypes();
+            _events = await _databaseWorker.DatabaseWorkerEvents.ReadEvents(variables, _eventTypes);
+            _eventsHistories = await _databaseWorker.DatabaseWorkerEvents.ReadOpenedEventsHistory(_events);
         }
 
-        public async Task<List<Event>?> GetEvents(List<Variable> variables) => await _databaseWorker.ReadEvents(variables, _eventTypes!);
+        public async Task<List<Event>?> GetEvents(List<Variable> variables) => 
+            await _databaseWorker.DatabaseWorkerEvents.ReadEvents(variables, _eventTypes!);
         
-        public async Task<List<EventType>?> GetEventTypes() => await _databaseWorker.ReadEventTypes();
+        public async Task<List<EventType>?> GetEventTypes() => 
+            await _databaseWorker.DatabaseWorkerEvents.ReadEventTypes();
         
-        public async Task<List<EventHistory>?> GetEventHistories(int? variableId = null, DateTime? start = null, DateTime? end = null, List<int>? type = null, int? count = 0)
+        public async Task<List<EventHistory>?> GetEventHistories(
+            int? variableId = null, 
+            DateTime? start = null, 
+            DateTime? end = null, 
+            List<int>? type = null, 
+            int? count = 0)
         {
             Variable? variable = variableId == null
                 ? null
                 : _variables?.FirstOrDefault(_ => _.Id == variableId);
 
-            return await _databaseWorker.ReadEventsHistory(_events!, variable, start, end, type, count);
+            return await _databaseWorker
+                            .DatabaseWorkerEvents
+                            .ReadEventsHistory(_events!, variable, start, end, type, count);
         }
 
         public async Task Process()
@@ -62,7 +75,7 @@ namespace Project1.Processors
                     };
 
                     _eventsHistories!.Add(eventHistory);
-                    await _databaseWorker.WriteEventsHistory(eventHistory);
+                    await _databaseWorker.DatabaseWorkerEvents.WriteEventsHistory(eventHistory);
                     continue;
                 }
 
@@ -75,7 +88,7 @@ namespace Project1.Processors
                         if (eventHistory != null)
                         {
                             eventHistory.EndTime = DateTime.Now;
-                            await _databaseWorker.WriteEndTimeEventHistory(eventHistory);
+                            await _databaseWorker.DatabaseWorkerEvents.WriteEndTimeEventHistory(eventHistory);
                             _eventsHistories!.Remove(eventHistory);
                         }
                     }

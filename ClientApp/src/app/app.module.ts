@@ -5,12 +5,12 @@ import { HttpClientModule } from '@angular/common/http';
 import { RouterModule } from '@angular/router';
 import { EventsModule } from './events/events.module';
 import { TrendsModule } from './trends/trends.module';
+import { GroupModule } from './group/group.module';
 
+import { GroupComponent } from './group/group.component';
 import { AppComponent } from './app.component';
 import { NavMenuComponent } from './nav-menu/nav-menu.component';
 import { HomeComponent } from './home/home.component';
-import { StateComponent } from './state/state.component';
-import { SettingsComponent } from './settings/settings.component';
 import { Strings } from '../common/strings';
 import { TrendsComponent } from './trends/trends.component';
 import { EventsComponent } from './events/events.component';
@@ -20,8 +20,6 @@ import { EventsComponent } from './events/events.component';
     AppComponent,
     NavMenuComponent,
     HomeComponent,
-    StateComponent,
-    SettingsComponent,
   ],
   imports: [
     BrowserModule.withServerTransition({ appId: 'ng-cli-universal' }),
@@ -29,12 +27,12 @@ import { EventsComponent } from './events/events.component';
     FormsModule,
     EventsModule,
     TrendsModule,
+    GroupModule,
     RouterModule.forRoot([
       { path: '', component: HomeComponent, pathMatch: 'full' },
-      { path: 'state', component: StateComponent },
+      { path: 'group/:id', component: GroupComponent },
       { path: 'events', component: EventsComponent },
       { path: 'trends', component: TrendsComponent },
-      { path: 'settings', component: SettingsComponent },
     ]),
 
   ],

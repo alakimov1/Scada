@@ -30,7 +30,7 @@ namespace Project1.Processors
         }
 
         public async Task<List<Trend>> ReadTrends(List<Variable> variables, DateTime? startTime, DateTime? endTime) => 
-            await _databaseWorker.ReadTrends(variables, startTime, endTime);
+            await _databaseWorker.DatabaseWorkerTrends.ReadTrends(variables, startTime, endTime);
 
         public async Task Process()
         {
@@ -48,7 +48,7 @@ namespace Project1.Processors
                 }
             }
 
-            await _databaseWorker.WriteTrendValue(toTrend);
+            await _databaseWorker.DatabaseWorkerTrends.WriteTrendValue(toTrend);
         }
 
     }

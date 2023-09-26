@@ -4,6 +4,8 @@ namespace Project1.Processors
 {
     public class ProcessorBackgroundWorker : IHostedService, IDisposable
     {
+        public ProcessorBackgroundWorker() { }
+
         private Timer? _timer = null;
 
         public Task StartAsync(CancellationToken stoppingToken)
@@ -13,17 +15,12 @@ namespace Project1.Processors
                 null,
                 TimeSpan.Zero,
                 TimeSpan.FromSeconds(5));
-
             return Task.CompletedTask;
         }
 
         private async void _process(object? state)
         {
-            if (Processor.Instance == null)
-                await Processor.Init();
-
-            if (Processor.Instance != null)
-                await Processor.Instance.Process();
+            await Processor.Process();
         }
 
         public Task StopAsync(CancellationToken stoppingToken)

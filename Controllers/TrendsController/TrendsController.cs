@@ -22,7 +22,7 @@ namespace Project1.Controllers.TrendsController
             if (_processor == null)
                 return StatusCode(StatusCodes.Status500InternalServerError);
 
-            return new JsonResult(_processor.GetVariables()?.Where(_=>_.TrendingPeriod>0).ToArray());
+            return new JsonResult(_processor.VariablesEntitiesProcessor.GetVariables()?.Where(_=>_.TrendingPeriod>0).ToArray());
         }
 
         [HttpPost]
@@ -42,7 +42,7 @@ namespace Project1.Controllers.TrendsController
             if (query.VariableId == null)
                 return new BadRequestResult();
 
-            var variables = _processor.GetVariables( new int[] { (int)query.VariableId });
+            var variables = _processor.VariablesEntitiesProcessor.GetVariables( new int[] { (int)query.VariableId });
 
             if (variables == null
                 || variables.Count == 0)

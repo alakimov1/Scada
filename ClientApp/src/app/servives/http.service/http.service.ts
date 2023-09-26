@@ -12,16 +12,18 @@ export class HttpService {
   constructor(private http: HttpClient) {
   }
 
-  getVariables(variableIds?: number[]) {
-    return this.post(`${this.apiRoot}variables/get`, variableIds);
-  }
+  getGroups = () => this.post(`${this.apiRoot}groups/get`, null);
 
-  changeVariables(variables: Variable[]) {
-    return this.post(`${this.apiRoot}variables/change`, variables);
-  }
+  getSubgroups = (id: number) => this.post(`${this.apiRoot}subgroups/get-by-groupId`, { groupid: id });
 
-  getEvents(variableId?: number, start?: Date, end?: Date, type?: number[], count?: number) {
-    return this.post(`${this.apiRoot}events/get`,
+  getVariables = (variableIds?: number[]) => this.post(`${this.apiRoot}variables/get`, variableIds);
+
+  getVariableEntitiesBySubgroupId = (id: number) => this.post(`${this.apiRoot}subgroups/get-variables-entities-by-subgroup`, { subgroupid: id });
+
+  changeVariables = (variables: Variable[]) => this.post(`${this.apiRoot}variables/change`, variables);
+
+  getEvents = (variableId?: number, start?: Date, end?: Date, type?: number[], count?: number) =>
+    this.post(`${this.apiRoot}events/get`,
       {
         variableId: variableId,
         start: start?.toLocaleString(),
@@ -30,25 +32,19 @@ export class HttpService {
         count: count
       }
     );
-  }
 
-  getEventTypes() {
-    return this.get(`${this.apiRoot}events/get-event-types`);
-  }
+  getEventTypes = () => this.get(`${this.apiRoot}events/get-event-types`);
 
-  getTrends(variableId?: number, start?: Date, end?: Date) {
-    return this.post(`${this.apiRoot}trends/get`,
+  getTrends = (variableId?: number, start?: Date, end?: Date) =>
+    this.post(`${this.apiRoot}trends/get`,
       {
         variableId: variableId,
         start: start?.toLocaleString(),
         end: end?.toLocaleString()
       }
     );
-  }
 
-  getTrendingVariables() {
-    return this.get(`${this.apiRoot}trends/get-variables`);
-  }
+  getTrendingVariables = () => this.get(`${this.apiRoot}trends/get-variables`);
 
   post(address: string, input: any) {
     return this.http.post(address, input)
@@ -60,7 +56,7 @@ export class HttpService {
         catchError((error) => {
           throw new HttpError(error.status, error.message);
         })
-      );
+    ).toPromise();
   }
 
   get(address: string) {
@@ -73,8 +69,6 @@ export class HttpService {
         catchError((error) => {
           throw new HttpError(error.status, error.message);
         })
-      );
+    ).toPromise();
   }
-
-
 }

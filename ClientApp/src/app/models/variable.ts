@@ -1,3 +1,5 @@
+import { Subgroup } from "./group";
+
 export enum VariableType {
   None,
   Bool,
@@ -17,5 +19,13 @@ export class Variable {
     public value: object,
     public active: number,
     public trendingPeriod:number
+  ) { }
+}
+
+export class VariableEntity {
+  constructor(
+    public variable: Variable,
+    public subgroup: Subgroup,
+    public writeable: boolean
   ) { }
 }

@@ -5,50 +5,73 @@ namespace Project1.Processors
 {
     public class Processor
     {
-        public TrendsProcessor TrendsProcessor;
-        public EventsProcessor EventsProcessor;
-        private DatabaseWorker _databaseWorker;
-        private List<Variable>? _variables;
+        private DatabaseWorker? _databaseWorker;
+        private List<Variable> _variables;
         public static Processor? Instance;
+        public TrendsProcessor? TrendsProcessor { get; private set; }
+        public EventsProcessor? EventsProcessor { get; private set; }
+        public VariablesEntitiesProcessor? VariablesEntitiesProcessor { get; private set; }
+
+        private static bool _initializationInProcess = false;
 
         public async static Task Init()
         {
-            Instance = new Processor();
-            await Instance.InitInstance();
+            if (Instance == null)
+            {
+                Instance = new Processor();
+                await Instance.InitInstance();
+            }
         }
 
         private async Task InitInstance()
         {
             _databaseWorker = new DatabaseWorker("Data Source=C:\\Users\\1\\source\\repos\\Project1\\Database\\DB.db");
-            _variables = await _databaseWorker.ReadVariables();
+            VariablesEntitiesProcessor = new VariablesEntitiesProcessor(_databaseWorker);
+            VariablesEntitiesProcessor.Init();
+            _variables = VariablesEntitiesProcessor.GetVariables();
             TrendsProcessor = new TrendsProcessor(_databaseWorker, _variables);
             EventsProcessor = new EventsProcessor(_databaseWorker);
             await EventsProcessor.Init(_variables);
         }
 
-        public async Task Process()
+        public static async Task Process()
         {
+            if (_initializationInProcess)
+                return;
+
+            if (Instance == null)
+            {
+                _initializationInProcess = true;
+                await Processor.Init();
+                _initializationInProcess = false;
+            }
+            else
+            {
+                await Instance.ProcessVariables();
+            }
+        }
+
+        private async Task ProcessVariables()
+        {
+            await ReadVariablesFromPLC(_variables);
             await EventsProcessor.Process();
             await TrendsProcessor.Process();
         }
 
-        public List<Variable>? GetVariables(int[]? ids = null) =>
-            ids == null || ids.Count() == 0
-            ? _variables
-            : ids.Select(id => _variables.FirstOrDefault(_ => _.Id == id)).ToList();
-
-        public void ChangeVariables(List<Variable> variables)
+        public async Task ChangeVariables(List<VariableEntity> variables)
         {
-            if (_variables == null)
-                return;
-
-            foreach (var variable in variables)
-            {
-                _variables.FirstOrDefault(_ => _.Id == variable.Id).Value = variable.Value;
-            }
-            //WriteToPLC;
+            var variablesChanged = VariablesEntitiesProcessor.SetVariableValueByEntity(variables);
+            await WriteVariablesToPLC(variablesChanged);
         }
 
-        
+        private async Task ReadVariablesFromPLC(List<Variable> variables)
+        {
+
+        }
+
+        private async Task WriteVariablesToPLC(List<Variable> variables)
+        {
+
+        }
     }
 }
