@@ -8,6 +8,7 @@ import { CheckboxListModule } from '../common-components/checkbox-list/checkbox-
 //import { NgxEchartsModule } from 'ngx-echarts';
 import { ChartTrendsModule } from './chart-trends/chart-trends.module';
 import { RadioListModule } from '../common-components/radio-list/radio-list.module';
+import { LeftMenuModule } from '../common-components/left-menu/left-menu.module';
 
 import { TrendsComponent } from './trends.component';
 
@@ -20,7 +21,8 @@ import { TrendsComponent } from './trends.component';
     DateTimePickerModule,
     CheckboxListModule,
     ChartTrendsModule,
-    RadioListModule
+    RadioListModule,
+    LeftMenuModule
     //NgxEchartsModule.forRoot({ echarts: () => import('echarts') })
   ],
   declarations: [TrendsComponent],

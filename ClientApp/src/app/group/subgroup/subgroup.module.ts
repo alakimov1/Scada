@@ -6,6 +6,8 @@ import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import { SubgroupComponent } from './subgroup.component';
 import { IndicatorModule } from '../../common-components/indicator/indicator.module';
 import { CheckModule } from '../../common-components/check/check.module';
+import { LabelModule } from '../../common-components/label/label.module';
+import { TextInputModule } from '../../common-components/text-input/text-input.module';
 
 @NgModule({
   imports: [
@@ -14,7 +16,9 @@ import { CheckModule } from '../../common-components/check/check.module';
     BrowserAnimationsModule,
     CommonModule,
     IndicatorModule,
-    CheckModule
+    CheckModule,
+    LabelModule,
+    TextInputModule
   ],
   declarations: [SubgroupComponent],
   bootstrap: [SubgroupComponent],

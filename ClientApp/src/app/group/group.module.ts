@@ -5,7 +5,7 @@ import { FormsModule } from '@angular/forms';
 import { SubgroupModule } from './subgroup/subgroup.module';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import { GroupComponent } from './group.component';
-
+import { LeftMenuModule } from '../common-components/left-menu/left-menu.module';
 
 @NgModule({
   imports: [
@@ -13,7 +13,8 @@ import { GroupComponent } from './group.component';
     FormsModule,
     BrowserAnimationsModule,
     CommonModule,
-    SubgroupModule
+    SubgroupModule,
+    LeftMenuModule
   ],
   declarations: [GroupComponent],
   bootstrap: [GroupComponent],

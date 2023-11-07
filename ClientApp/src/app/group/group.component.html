@@ -2,13 +2,7 @@
   <div>
     <h1>{{group.name}}</h1>
     <div>
-      <button *ngFor="let subgroup of this.subgroups;"
-              type="button"
-              [class.btn-lg]="subgroup.id==selectedSubgroup.id"
-              (click)="selectSubgroup(subgroup.id)"
-              class="btn btn-link">
-        {{subgroup.name}}
-      </button>
+      <left-menu [items] ="subgroups" (onChanged) ="selectSubgroup($event)"></left-menu>
     </div>
   </div>
   <div class="container-fluid">

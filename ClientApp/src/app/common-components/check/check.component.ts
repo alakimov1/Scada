@@ -11,16 +11,11 @@ export class CheckComponent {
     this._value = value;
   }
 
-  @Input() public set text(value: string) {
-    this._text = value;
-  }
-
   @Input() public set id(value: number) {
     this._id = value;
   }
 
   _id: number = 0;
-  _text: string = "";
   _value: boolean = false;
 
   handleSelected(v: any) {

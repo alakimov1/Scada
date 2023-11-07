@@ -29,20 +29,33 @@ namespace Project1.Controllers.VariablesController
                 : new JsonResult(result);
         }
 
-
-
         [HttpPost]
-        [Route("api/[controller]/change")]
-        public async Task<IActionResult> Change([FromBody] VariableEntity[] variablesEntities)
+        [Route("api/[controller]/variables/get-values")]
+        public IActionResult GetValues([FromBody] int[]? ids = null)
         {
             if (_processor == null)
                 return StatusCode(StatusCodes.Status500InternalServerError);
 
-            if (variablesEntities == null)
+            var result = _processor.GetVariablesValues(ids);
+
+            return result == null
+                ? new NotFoundResult()
+                : new JsonResult(result);
+        }
+
+        [HttpPost]
+        [Route("api/[controller]/change")]
+        public async Task<IActionResult> Change([FromBody] VariableChangeQuery[] variables)
+        {
+            if (_processor == null)
+                return StatusCode(StatusCodes.Status500InternalServerError);
+
+            if (variables == null)
                 return new BadRequestResult();
 
-             await _processor.ChangeVariables(variablesEntities.ToList());
-            return new OkResult();
+            var resultDictionary = await _processor.ChangeVariables(variables);
+            var result = resultDictionary.Select(_ => new { Id = _.Key, Result = _.Value }).ToArray();
+            return new JsonResult(result);
         }
     }
 }

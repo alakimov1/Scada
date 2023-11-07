@@ -26,6 +26,7 @@ export class VariableEntity {
   constructor(
     public variable: Variable,
     public subgroup: Subgroup,
-    public writeable: boolean
+    public writable: boolean
   ) { }
+
 }

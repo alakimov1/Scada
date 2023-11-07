@@ -4,18 +4,29 @@
       <h3>{{_subgroup.name}}</h3>
     </div>
   </div>
-  <div class="row">
+  <div *ngFor="let variableEntity of variableEntities" class="row">
     <div class="col text-end">
-      Настройка:
+      {{variableEntity.variable.name}}
     </div>
-    <div class="col text-start">
-      Значение
+    <div *ngIf="isInfoText(variableEntity)" class="col text-start">
+      {{variableEntity.variable.value}}
+    </div>
+    <div *ngIf="isIndicator(variableEntity)" class="col text-start">
+      <indicator [value]="false"></indicator>
+    </div>
+    <div *ngIf="isCheckBox(variableEntity)" class="col text-start">
+      <check [value]="false" (onChanged)="onChange($event, variableEntity.variable.id)" />
+    </div>
+    <div *ngIf="isInputText(variableEntity)" class="col text-start">
+      <text-input [value]="'1'"
+                  [error]="validationErrors.get(variableEntity.variable.id)"
+                  (onChanged)="onChange($event, variableEntity.variable.id)"
+                  ></text-input>
     </div>
   </div>
-  <div class="row">
-    <indicator [id]="0" [text]="''" [value]="true"></indicator>
-  </div>
-  <div class="row">
-    <indicator [id]="0" [text]="''" [value]="false"></indicator>
-  </div>
+  <!--<div class="row">
+    <button type="button" class="btn btn-primary">
+      Применить настройки
+    </button>
+  </div>-->
 </div>

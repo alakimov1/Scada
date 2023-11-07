@@ -1,6 +1,7 @@
 ﻿using Project1.Database;
 using Project1.Models;
 using System.Linq;
+using Project1.Controllers.VariablesController;
 
 namespace Project1.Processors
 {
@@ -52,74 +53,28 @@ namespace Project1.Processors
             return ids == null || ids.Count() == 0
             ? _variableEntities.Select(_ => _.Variable).Distinct().ToList()
             : ids.Select(id => _variableEntities.FirstOrDefault(_ => _.Variable.Id == id).Variable).ToList();
-
         }
 
-        public List<Variable> SetVariableValueByEntity(List<VariableEntity> variablesValues) =>
-            SetVariableValueByEntity(variablesValues.ToDictionary(_ => _, _ => _.Variable.Value));
-
-        public List<Variable> SetVariableValueByEntity(Dictionary<int, string> variablesValues) =>
-            SetVariableValueByEntity(
-                variablesValues.ToDictionary(_ => _variableEntities.FirstOrDefault(e => e.Id == _.Key), _=>_.Value)
-                );
-
-        public List<Variable> SetVariableValueByEntity(Dictionary<VariableEntity, string> variablesValues) =>
-            SetVariableValueByEntity(
-                variablesValues.ToDictionary(
-                    _ => _variableEntities.FirstOrDefault(e => e.Id == _.Key.Id), 
-                    _ => ValuesParsing.GetValueFromString(_.Value, _.Key.Variable.Type)
-                    )
-                );
-
-        public List<Variable> SetVariables(Dictionary<int, string> variablesValues) =>
-            SetVariables(
-                variablesValues.ToDictionary(
-                    key => _variableEntities.FirstOrDefault(_ => _.Variable.Id == key.Key).Variable, 
-                    _ => _.Value
-                    )
-                );
-
-        public List<Variable> SetVariables(Dictionary<Variable, string> variablesValues) => 
-            SetVariables(
-                variablesValues.ToDictionary(_ => _.Key, _ => ValuesParsing.GetValueFromString(_.Value,_.Key.Type))
-                );
-
-        public List<Variable> SetVariables(Dictionary<int, object> variablesValues) => 
-            SetVariables(
-                variablesValues.ToDictionary(
-                    key => _variableEntities.FirstOrDefault(_=>_.Variable.Id == key.Key).Variable, 
-                    _ => _.Value
-                    )
-                );
-
-        public List<int> WriteableVariablesIds => _variableEntities
-            .Where(_ => _.Writable && _.Variable.Id != null)
-            .Select(_=>(int)_.Variable.Id)
-            .Distinct()
-            .ToList();
-
-        public List<Variable> SetVariables(List<Variable> variables) =>
-            SetVariables(
-                variables
-                    .Where(variable=>variable!= null && variable.Id != null)
-                    .ToDictionary(variable => (int)variable.Id, variable => variable.Value)
-                );
-
-        public List<Variable> SetVariableValueByEntity(Dictionary<VariableEntity,object> variables)=>
-            SetVariables(
-                variables
-                    .Where(_ => _.Key.Writable && _.Key.Variable.Id != null)
-                    .ToDictionary(e=>e.Key.Variable,e=>e.Value)
-                );
-
-        public List<Variable> SetVariables(Dictionary<Variable, object> variables)
+        public Dictionary<int, VariableValueValidationResult> SetVariables(Dictionary<Variable, object> variables)
         {
+            var dictToReturn = new Dictionary<int, VariableValueValidationResult>();
+
             foreach (var variable in variables)
             {
-                variable.Key.Value = variable.Value;
+                var success = ValuesParsing.TryParse(variable.Value as string, variable.Key.Type, out var result);
+
+                if (success)
+                {
+                    variable.Key.Value = result;
+                    dictToReturn.Add((int)variable.Key.Id, VariableValueValidationResult.Ok);
+                }
+                else
+                {
+                    dictToReturn.Add((int)variable.Key.Id, VariableValueValidationResult.IncorrectValue);
+                }
             }
 
-            return variables.Keys.ToList();
+            return dictToReturn;
         }
 
     }

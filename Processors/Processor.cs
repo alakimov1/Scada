@@ -1,5 +1,6 @@
 ﻿using Project1.Database;
 using Project1.Models;
+using Project1.Controllers.VariablesController;
 
 namespace Project1.Processors
 {
@@ -27,7 +28,7 @@ namespace Project1.Processors
         {
             _databaseWorker = new DatabaseWorker("Data Source=C:\\Users\\1\\source\\repos\\Project1\\Database\\DB.db");
             VariablesEntitiesProcessor = new VariablesEntitiesProcessor(_databaseWorker);
-            VariablesEntitiesProcessor.Init();
+            await VariablesEntitiesProcessor.Init();
             _variables = VariablesEntitiesProcessor.GetVariables();
             TrendsProcessor = new TrendsProcessor(_databaseWorker, _variables);
             EventsProcessor = new EventsProcessor(_databaseWorker);
@@ -42,7 +43,7 @@ namespace Project1.Processors
             if (Instance == null)
             {
                 _initializationInProcess = true;
-                await Processor.Init();
+                await Init();
                 _initializationInProcess = false;
             }
             else
@@ -58,10 +59,37 @@ namespace Project1.Processors
             await TrendsProcessor.Process();
         }
 
-        public async Task ChangeVariables(List<VariableEntity> variables)
+        public async Task<Dictionary<int, VariableValueValidationResult>> ChangeVariables(VariableChangeQuery[] variablesToChange)
         {
-            var variablesChanged = VariablesEntitiesProcessor.SetVariableValueByEntity(variables);
-            await WriteVariablesToPLC(variablesChanged);
+            var variablesToSetDict = new Dictionary<Variable, object>();
+
+            foreach(var variableToChange in variablesToChange)
+            {
+                var variable = _variables.FirstOrDefault(variable => variable.Id == variableToChange.Id);
+
+                if (variable != null)
+                    variablesToSetDict.Add(variable, variableToChange.Value);
+            }
+
+            var variablesChanged = VariablesEntitiesProcessor.SetVariables(variablesToSetDict);
+            await WriteVariablesToPLC(
+                variablesToSetDict
+                    .Where(_ => variablesChanged.ContainsKey((int)_.Key.Id) && variablesChanged[(int)_.Key.Id] == VariableValueValidationResult.Ok)
+                    .Select(_ => _.Key)
+                    .ToList());
+            return variablesChanged;
+        }
+
+        public (int Id, object Value)[] GetVariablesValues(int[]? ids = null)
+        {
+            if (_variables == null || ids == null || ids.Count() == 0)
+                return null;
+
+            var idsToReturn = ids.Where(id => _variables.Any(_ => _.Id == id && _.Value != null));
+
+            return idsToReturn
+                .Select(id => (id, _variables.First(variable => variable.Id == id).Value))
+                .ToArray();
         }
 
         private async Task ReadVariablesFromPLC(List<Variable> variables)

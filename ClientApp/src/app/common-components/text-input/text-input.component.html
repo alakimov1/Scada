@@ -1,0 +1,6 @@
+<div class="input-group">
+  <input type="text" class="form-control" [class.is-invalid]="_error.length > 0" [(ngModel)]="_value" (input)="handleChange($event)">
+  <div class="invalid-feedback">
+    {{_error}}
+  </div>
+</div>

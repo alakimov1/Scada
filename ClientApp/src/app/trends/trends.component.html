@@ -1,23 +1,32 @@
-<h1>Графики</h1>
-<div class="row">
-  <div class="col-sm">
-    <date-time-picker [text]="'От'"
-                      [maxDate]="endDate"
-                      [initDate]="startDate"
-                      (onChanged)="onStartDateChange($event)" />
+<div class="d-flex">
+  <div>
+    <h1>Графики</h1>
+    <div>
+      <left-menu [items]="variablesList" (onChanged)="onVariableChange($event)"></left-menu>
+    </div>
   </div>
-  <div class="col-sm">
-    <date-time-picker [text]="'До'"
-                      [minDate]="startDate"
-                      [initDate]="endDate"
-                      (onChanged)="onEndDateChange($event)" />
+  <div class="container-fluid">
+    <div class="row">
+      <div class="col-sm">
+        <date-time-picker [text]="'От'"
+                          [maxDate]="endDate"
+                          [initDate]="startDate"
+                          (onChanged)="onStartDateChange($event)" />
+      </div>
+      <div class="col-sm">
+        <date-time-picker [text]="'До'"
+                          [minDate]="startDate"
+                          [initDate]="endDate"
+                          (onChanged)="onEndDateChange($event)" />
+      </div>
+    </div>
+    <span>
+      <chart-trends-component [data]="trends" />
+    </span>
   </div>
 </div>
-<span>
-  <radio-list [radioListModel]="variablesList"
-               (onChanged)="onVariableChange($event)"/>
-</span>
-<span>
-  <chart-trends-component [data]="trends"/>
-</span>
+
+
+
+
 

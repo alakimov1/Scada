@@ -1,0 +1,7 @@
+<button *ngFor="let item of this._items;"
+        type="button"
+        [class.btn-lg]="item.id==selected"
+        (click)="change(item.id)"
+        class="btn btn-link">
+  {{item.name}}
+</button>

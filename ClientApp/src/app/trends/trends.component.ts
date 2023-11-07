@@ -3,6 +3,7 @@ import { Trend } from './chart-trends/trend';
 import { TrendPoint } from './chart-trends/trend-point';
 import { HttpService } from '../servives/http.service/http.service';
 import { Variable } from '../models/variable';
+import { number } from 'echarts';
 
 @Component({
   selector: 'app-trends-component',
@@ -74,14 +75,7 @@ export class TrendsComponent {
     this.variablesList = [];
     this.httpService.getTrendingVariables().then(
       res => {
-        res.forEach((variable: Variable) => {
-          this.variablesList?.push(
-            {
-              id: variable.id,
-              name: variable.name,
-            }
-          );
-        });
+        this.variablesList = res.map((variable: any) => { return { id: variable.id, name: variable.name } });
       }
     ).catch(error => console.log(error.message));
 

@@ -18,9 +18,11 @@ export class HttpService {
 
   getVariables = (variableIds?: number[]) => this.post(`${this.apiRoot}variables/get`, variableIds);
 
+  getVariablesValues = (variableIds?: number[]) => this.post(`${this.apiRoot}variables/get-values`, variableIds);
+
   getVariableEntitiesBySubgroupId = (id: number) => this.post(`${this.apiRoot}subgroups/get-variables-entities-by-subgroup`, { subgroupid: id });
 
-  changeVariables = (variables: Variable[]) => this.post(`${this.apiRoot}variables/change`, variables);
+  changeVariables = (variables: { id: number, value: string }[]) => this.post(`${this.apiRoot}variables/change`, variables); 
 
   getEvents = (variableId?: number, start?: Date, end?: Date, type?: number[], count?: number) =>
     this.post(`${this.apiRoot}events/get`,
@@ -47,6 +49,7 @@ export class HttpService {
   getTrendingVariables = () => this.get(`${this.apiRoot}trends/get-variables`);
 
   post(address: string, input: any) {
+    console.log(input);
     return this.http.post(address, input)
       .pipe(
         map((result: any) => {

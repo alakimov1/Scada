@@ -11,6 +11,13 @@
         String
     }
 
+    public enum VariableValueValidationResult
+    {
+        Ok,
+        IncorrectValue,
+        NotFound
+    }
+
     public class Variable
     {
         public int? Id { get; set; }
