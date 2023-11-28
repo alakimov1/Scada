@@ -1,5 +1,6 @@
 import { Component } from '@angular/core';
-import { HttpService } from '../servives/http.service/http.service';
+import { HttpService } from '../services/http.service';
+import { ErrorService } from '../services/error.service';
 import { Observable } from 'rxjs';
 import { Variable } from '../models/variable';
 import { HttpError } from '../../common/http-error';
@@ -10,7 +11,7 @@ import { Group, Subgroup } from '../models/group'
 @Component({
   selector: 'group-component',
   templateUrl: './group.component.html',
-  providers: [HttpService]
+  providers: [HttpService, ErrorService]
 })
 
 export class GroupComponent {
@@ -25,7 +26,8 @@ export class GroupComponent {
 
   constructor(
     private route: ActivatedRoute,
-    private httpService: HttpService)
+    private httpService: HttpService,
+    private errorService: ErrorService)
   {
     this.group = new Group(0, "");
 
@@ -49,7 +51,7 @@ export class GroupComponent {
       if (this.subgroups && this.subgroups[0])
         this.selectedSubgroup = this.subgroups[0];
     })
-      .catch(ex => console.log(ex.message));
+      .catch(ex => this.errorService.handle(ex.message));
   }
 
   refreshSubgroups() {

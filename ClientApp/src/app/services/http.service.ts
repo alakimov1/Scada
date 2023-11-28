@@ -2,8 +2,8 @@ import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable, catchError } from 'rxjs';
 import { map } from 'rxjs/operators';
-import { HttpError } from '../../../common/http-error'
-import { Variable } from '../../models/variable';
+import { HttpError } from '../../common/http-error'
+import { Variable } from '../models/variable';
 
 @Injectable()
 export class HttpService {
@@ -11,6 +11,8 @@ export class HttpService {
 
   constructor(private http: HttpClient) {
   }
+
+  sendError = (message: string) => this.post(`${this.apiRoot}logging/error`, message);
 
   getGroups = () => this.post(`${this.apiRoot}groups/get`, null);
 
@@ -49,7 +51,6 @@ export class HttpService {
   getTrendingVariables = () => this.get(`${this.apiRoot}trends/get-variables`);
 
   post(address: string, input: any) {
-    console.log(input);
     return this.http.post(address, input)
       .pipe(
         map((result: any) => {

@@ -1,10 +1,11 @@
 import { Component, OnInit } from '@angular/core';
-import { HttpService } from '../servives/http.service/http.service';
+import { HttpService } from '../services/http.service';
+import { ErrorService } from '../services/error.service';
 
 @Component({
   selector: 'app-events-component',
   templateUrl: './events.component.html',
-  providers: [HttpService]
+  providers: [HttpService, ErrorService]
 })
 
 export class EventsComponent {
@@ -22,7 +23,9 @@ export class EventsComponent {
     this.getEvents();
   }
 
-  constructor(private httpService: HttpService) { }
+  constructor(
+    private httpService: HttpService,
+    private errorService: ErrorService) { }
 
   onStartDateChange(date?: Date) {
     this.startDate = date;
@@ -54,7 +57,7 @@ export class EventsComponent {
             );
           });
         }
-      ).catch(error => console.log(error.message));
+      ).catch(error => this.errorService.handle(error.message));
   }
 
   getEvents() {
@@ -84,6 +87,6 @@ export class EventsComponent {
           });
           this.eventsData = this._eventsData;
         }
-      ).catch(error => console.log(error.message));
+    ).catch(error => this.errorService.handle(error.message));
   }
 }

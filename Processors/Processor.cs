@@ -1,6 +1,7 @@
 ﻿using Project1.Database;
 using Project1.Models;
 using Project1.Controllers.VariablesController;
+using Project1.Services.Analytics;
 
 namespace Project1.Processors
 {
@@ -77,6 +78,10 @@ namespace Project1.Processors
                     .Where(_ => variablesChanged.ContainsKey((int)_.Key.Id) && variablesChanged[(int)_.Key.Id] == VariableValueValidationResult.Ok)
                     .Select(_ => _.Key)
                     .ToList());
+
+            foreach(var variableToSet in variablesToSetDict)
+                Analytics.Write($"Пользователь меняет значение переменной { variableToSet.Key.Name} на {variableToSet.Value.ToString()}");
+
             return variablesChanged;
         }
 

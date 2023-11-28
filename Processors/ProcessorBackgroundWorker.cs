@@ -1,10 +1,13 @@
 ﻿using System.Diagnostics;
+using Serilog;
 
 namespace Project1.Processors
 {
     public class ProcessorBackgroundWorker : IHostedService, IDisposable
     {
-        public ProcessorBackgroundWorker() { }
+        public ProcessorBackgroundWorker() 
+        {
+        }
 
         private Timer? _timer = null;
 
@@ -20,7 +23,14 @@ namespace Project1.Processors
 
         private async void _process(object? state)
         {
-            await Processor.Process();
+            try
+            {
+                await Processor.Process();
+            }
+            catch(Exception ex)
+            {
+                Log.Error($"{ex.Message}{Environment.NewLine}{ex.StackTrace}");
+            }
         }
 
         public Task StopAsync(CancellationToken stoppingToken)

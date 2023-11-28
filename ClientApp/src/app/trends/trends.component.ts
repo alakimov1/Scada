@@ -1,14 +1,15 @@
 import { Component, OnInit } from '@angular/core';
 import { Trend } from './chart-trends/trend';
 import { TrendPoint } from './chart-trends/trend-point';
-import { HttpService } from '../servives/http.service/http.service';
+import { HttpService } from '../services/http.service';
+import { ErrorService } from '../services/error.service';
 import { Variable } from '../models/variable';
 import { number } from 'echarts';
 
 @Component({
   selector: 'app-trends-component',
   templateUrl: './trends.component.html',
-  providers: [HttpService]
+  providers: [HttpService, ErrorService]
 })
 export class TrendsComponent {
   private _trends : Trend[]=[];
@@ -18,7 +19,9 @@ export class TrendsComponent {
   variablesList?: any[];
   variableId: number | undefined;
   
-  constructor(private httpService: HttpService) { }
+  constructor(
+    private httpService: HttpService,
+    private errorService: ErrorService) { }
 
   ngOnInit(): void {
     this.startDate = new Date();
@@ -68,7 +71,7 @@ export class TrendsComponent {
         this.trends = [];
         this.trends = this._trends;
       }
-    ).catch(error => console.log(error.message));
+    ).catch(error => this.errorService.handle(error.message));
   }
 
   getVariableList() {
@@ -77,7 +80,7 @@ export class TrendsComponent {
       res => {
         this.variablesList = res.map((variable: any) => { return { id: variable.id, name: variable.name } });
       }
-    ).catch(error => console.log(error.message));
+    ).catch(error => this.errorService.handle(error.message));
 
   }
 }

@@ -1,16 +1,15 @@
-import { Component, Input } from '@angular/core';
-import { HttpService } from '../../servives/http.service/http.service';
+import { Component, Input, OnDestroy } from '@angular/core';
+import { HttpService } from '../../services/http.service';
+import { ErrorService } from '../../services/error.service';
 import { Observable, Subscription, interval } from 'rxjs';
 import { Variable, VariableEntity, VariableType } from '../../models/variable';
 import { HttpError } from '../../../common/http-error';
 import { Subgroup } from '../../models/group';
-import { number } from 'echarts';
-import { Res } from '@nestjs/common';
 
 @Component({
   selector: 'subgroup-component',
   templateUrl: './subgroup.component.html',
-  providers: [HttpService]
+  providers: [HttpService, ErrorService]
 })
 
 export class SubgroupComponent {
@@ -24,20 +23,24 @@ export class SubgroupComponent {
   @Input() public set subgroup(value: any) {
     if (!value)
       return;
-
     this._subgroup = value;
     this.subgroupSelected = true;
     this.refreshVariables();
   }
 
   constructor(
-    private httpService: HttpService) {
+    private httpService: HttpService,
+    private errorService: ErrorService) {
     this.busyRefreshingVariables = false;
     this.refreshVariablesSub = interval(200).subscribe((func => {
       if (this.subgroupSelected && !this.busyRefreshingVariables) {
-        this.refreshVariables();
+        this.refreshVariablesValues();
       }
     }));
+  }
+
+  ngOnDestroy() {
+    this.refreshVariablesSub.unsubscribe();
   }
 
   refreshVariablesValues() {
@@ -48,13 +51,17 @@ export class SubgroupComponent {
     this.httpService.getVariablesValues(this.variableEntities.map(_ => _.variable.id)).then((variables :[number, any][]) => {
       if (variables) {
         variables?.forEach(variable => {
-          this.variableEntities?.filter(entity => entity?.variable?.id == variable[0])?.forEach(entity => entity.variable.value = variable[1]);
+          this.variableEntities?.filter(entity =>
+            !entity.writable && entity?.variable?.id == variable[0]
+          )?.forEach(
+            entity => entity.variable.value = variable[1]
+          );
         });
         this.busyRefreshingVariables = false;
       }
     })
       .catch(ex => {
-        console.log(ex.message);
+        this.errorService.handle(ex.message);
         this.busyRefreshingVariables = false;
       }
       );
@@ -70,7 +77,7 @@ export class SubgroupComponent {
       }
     })
       .catch(ex => {
-        console.log(ex.message);
+        this.errorService.handle(ex.message);
         this.busyRefreshingVariables = false;
       }
       );
@@ -119,6 +126,6 @@ export class SubgroupComponent {
         });
       }
     })
-      .catch(ex => console.log(ex.message));
+      .catch(ex => this.errorService.handle(ex.message));
   }
 }
