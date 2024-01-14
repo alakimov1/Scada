@@ -1,7 +1,5 @@
 ﻿using Project1.Database;
 using Project1.Models;
-using System.Linq;
-using Project1.Controllers.VariablesController;
 
 namespace Project1.Processors
 {

@@ -27,5 +27,6 @@
         public object? Value { get; set; }    
         public int Active { get; set; }
         public int? TrendingPeriod { get; set; }
+        public int Connection { get; set; }
     }
 }

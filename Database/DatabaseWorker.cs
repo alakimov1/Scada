@@ -8,12 +8,14 @@ namespace Project1.Database
         private string _connectionString;
         public DatabaseWorkerEvents DatabaseWorkerEvents { get; private set; }
         public DatabaseWorkerTrends DatabaseWorkerTrends { get; private set; }
+        public DatabaseWorkerPLCConnections DatabaseWorkerPLCConnections { get; private set; }
 
         public DatabaseWorker(string connectionString) 
         {
             _connectionString = connectionString;
             DatabaseWorkerEvents = new DatabaseWorkerEvents(connectionString);
             DatabaseWorkerTrends = new DatabaseWorkerTrends(connectionString);
+            DatabaseWorkerPLCConnections = new DatabaseWorkerPLCConnections(connectionString);
         }
 
         private string _getCommandUpdateVariable(Variable variable) => 
@@ -68,7 +70,8 @@ namespace Project1.Database
                         Name = reader.GetString(3),
                         Value = ValuesParsing.Parse(reader.GetString(4), type),
                         Active = reader.GetInt32(5),
-                        TrendingPeriod = reader.GetInt32(6)
+                        TrendingPeriod = reader.GetInt32(6),
+                        Connection = reader.GetInt32(7),
                     });
             }
 

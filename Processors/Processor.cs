@@ -99,7 +99,7 @@ namespace Project1.Processors
 
         private async Task ReadVariablesFromPLC(List<Variable> variables)
         {
-
+            
         }
 
         private async Task WriteVariablesToPLC(List<Variable> variables)
