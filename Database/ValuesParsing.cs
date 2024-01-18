@@ -10,8 +10,8 @@ namespace Project1.Database
             {
                 VariableType.Bool => bool.Parse(value),
                 VariableType.Byte => byte.Parse(value),
-                VariableType.Word => int.Parse(value),
-                VariableType.Dword => long.Parse(value),
+                VariableType.Word => short.Parse(value),
+                VariableType.Dword => int.Parse(value),
                 VariableType.Real => double.Parse(value),
                 _ => value
             };
@@ -29,13 +29,13 @@ namespace Project1.Database
                     result = byteResult;
                     return byteSuccess;
                 case VariableType.Word:
-                    var intSuccess = int.TryParse(value, out int intResult);
-                    result = intResult;
-                    return intSuccess;
+                    var wordSuccess = short.TryParse(value, out short wordResult);
+                    result = wordResult;
+                    return wordSuccess;
                 case VariableType.Dword:
-                    var longSuccess = long.TryParse(value, out long longResult);
-                    result = longResult;
-                    return longSuccess;
+                    var dwordSuccess = int.TryParse(value, out int dwordResult);
+                    result = dwordResult;
+                    return dwordSuccess;
                 case VariableType.Real:
                     var doubleSuccess = double.TryParse(value, out double doubleResult);
                     result = doubleResult;
@@ -59,13 +59,13 @@ namespace Project1.Database
                     result = byteSuccess ? (byte)value : null;
                     return byteSuccess;
                 case VariableType.Word:
-                    var intSuccess = value is int;
-                    result = intSuccess ? (int)value : null;
-                    return intSuccess;
+                    var wordSuccess = value is short;
+                    result = wordSuccess ? (short)value : null;
+                    return wordSuccess;
                 case VariableType.Dword:
-                    var longSuccess = value is long;
-                    result = longSuccess ? (long)value : null;
-                    return longSuccess;
+                    var dwordSuccess = value is int;
+                    result = dwordSuccess ? (int)value : null;
+                    return dwordSuccess;
                 case VariableType.Real:
                     var doubleSuccess = value is double;
                     result = doubleSuccess ? (double)value : null;
@@ -81,8 +81,8 @@ namespace Project1.Database
             {
                 VariableType.Bool => bool.Parse(value),
                 VariableType.Byte => byte.Parse(value),
-                VariableType.Word => int.Parse(value),
-                VariableType.Dword => long.Parse(value),
+                VariableType.Word => short.Parse(value),
+                VariableType.Dword => int.Parse(value),
                 VariableType.Real => double.Parse(value),
                 _ => value
             };

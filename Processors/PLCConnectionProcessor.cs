@@ -35,10 +35,31 @@ namespace Project1.Processors
                 x => (x.Value, (ushort)(maxRegisterAddressByConnections[x.Key] - x.Value)));
         }
 
-        public async Task ReadVariables(Variable[] variables) =>
+        public async Task ReadVariables(List<Variable> variables)
+        {
             _registersByConnections = await GetRegistersByConnections(variables);
+            
+            foreach (var variable in variables)
+                GetVariableValueFromRegisters(variable);
+        }
 
-        private async Task<Dictionary<int, ushort[]>> GetRegistersByConnections(Variable[] variables)
+        private void GetVariableValueFromRegisters(Variable variable)
+        {
+            var registers = _registersByConnections[variable.Connection];
+            var minAddress = _minAndLengthRegisterAddressByConnections[variable.Connection].Min;
+
+            variable.Value = variable.Type switch
+            {
+                VariableType.Bool => ConverterService.ToBoolFromRegisters(registers, variable.Address, minAddress),
+                VariableType.Byte => ConverterService.ToByteFromRegisters(registers, variable.Address, minAddress),
+                VariableType.Word => ConverterService.ToWordFromRegisters(registers, variable.Address, minAddress),
+                VariableType.Dword => ConverterService.ToDWordFromRegisters(registers, variable.Address, minAddress),
+                VariableType.Real => ConverterService.ToRealFromRegisters(registers, variable.Address, minAddress),
+                _ => null
+            };
+        }
+
+        private async Task<Dictionary<int, ushort[]>> GetRegistersByConnections()
         {
             var registersByConnection = new Dictionary<int, ushort[]>();
 
@@ -78,7 +99,59 @@ namespace Project1.Processors
 
         public async Task WriteVariable(Variable variable)
         {
-            
+            var connectionId = variable.Connection;
+            var startAddress = _minAndLengthRegisterAddressByConnections[connectionId].Min;
+
+            if (variable.Value == null)
+                return;
+
+            if (variable.Type == VariableType.Bool)
+                await _modbusService.WriteRegister(
+                    connectionId,
+                    (ushort)(variable.Address / 16),
+                    ConverterService.FromBoolToRegisters(
+                        (bool)variable.Value,
+                        _registersByConnections[connectionId],
+                        variable.Address,
+                        startAddress));
+            else if (variable.Type == VariableType.Dword)
+                await _modbusService.WriteRegisters(
+                    connectionId,
+                    (ushort)variable.Address,
+                    ConverterService.FromValueToRegisters(
+                        (int)variable.Value,
+                        _registersByConnections[connectionId],
+                        variable.Address,
+                        startAddress));
+            else if (variable.Type == VariableType.Real)
+                await _modbusService.WriteRegisters(
+                    connectionId,
+                    (ushort)variable.Address,
+                    ConverterService.FromValueToRegisters(
+                        (float)variable.Value,
+                        _registersByConnections[connectionId],
+                        variable.Address,
+                        startAddress));
+            else if (variable.Type == VariableType.Byte)
+                await _modbusService.WriteRegisters(
+                    connectionId,
+                    (ushort)variable.Address,
+                    ConverterService.FromValueToRegisters(
+                        (byte)variable.Value,
+                        _registersByConnections[connectionId],
+                        variable.Address,
+                        startAddress));
+            else if (variable.Type == VariableType.Word)
+                await _modbusService.WriteRegisters(
+                    connectionId,
+                    (ushort)variable.Address,
+                    ConverterService.FromValueToRegisters(
+                        (short)variable.Value,
+                        _registersByConnections[connectionId],
+                        variable.Address,
+                        startAddress));
+            else
+                return;
         }
 
         public void CloseConnections() => _modbusService.CloseAllConnections();

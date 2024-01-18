@@ -9,6 +9,7 @@ namespace Project1.Processors
     {
         private DatabaseWorker? _databaseWorker;
         private List<Variable> _variables;
+        private PLCConnectionProcessor _connectionProcessor; 
         public static Processor? Instance;
         public TrendsProcessor? TrendsProcessor { get; private set; }
         public EventsProcessor? EventsProcessor { get; private set; }
@@ -31,6 +32,8 @@ namespace Project1.Processors
             VariablesEntitiesProcessor = new VariablesEntitiesProcessor(_databaseWorker);
             await VariablesEntitiesProcessor.Init();
             _variables = VariablesEntitiesProcessor.GetVariables();
+            _connectionProcessor = new PLCConnectionProcessor(_databaseWorker);
+            await _connectionProcessor.Init(_variables.ToArray());
             TrendsProcessor = new TrendsProcessor(_databaseWorker, _variables);
             EventsProcessor = new EventsProcessor(_databaseWorker);
             await EventsProcessor.Init(_variables);
@@ -73,11 +76,13 @@ namespace Project1.Processors
             }
 
             var variablesChanged = VariablesEntitiesProcessor.SetVariables(variablesToSetDict);
-            await WriteVariablesToPLC(
-                variablesToSetDict
-                    .Where(_ => variablesChanged.ContainsKey((int)_.Key.Id) && variablesChanged[(int)_.Key.Id] == VariableValueValidationResult.Ok)
-                    .Select(_ => _.Key)
-                    .ToList());
+            var variablesToWrite = variablesToSetDict
+                .Where(_ => variablesChanged.ContainsKey((int)_.Key.Id) && variablesChanged[(int)_.Key.Id] == VariableValueValidationResult.Ok)
+                .Select(_ => _.Key)
+                .ToList();
+
+            foreach (var variable in variablesToWrite)
+                await WriteVariableToPLC(variable);
 
             foreach(var variableToSet in variablesToSetDict)
                 Analytics.Write($"Пользователь меняет значение переменной { variableToSet.Key.Name} на {variableToSet.Value.ToString()}");
@@ -99,12 +104,14 @@ namespace Project1.Processors
 
         private async Task ReadVariablesFromPLC(List<Variable> variables)
         {
-            
+            if (_connectionProcessor != null)
+                await _connectionProcessor.ReadVariables(variables);
         }
 
-        private async Task WriteVariablesToPLC(List<Variable> variables)
+        private async Task WriteVariableToPLC(Variable variable)
         {
-
+            if (_connectionProcessor != null)
+                await _connectionProcessor.WriteVariable(variable);
         }
     }
 }
