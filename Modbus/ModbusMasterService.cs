@@ -1,6 +1,5 @@
 ﻿using Modbus.Device;
 using Project1.Modbus.Models;
-using System.Net;
 
 namespace Project1.Modbus
 {
@@ -8,6 +7,7 @@ namespace Project1.Modbus
     {
         private List<IModbusDevice> _existingModbusDevices;
         private SerialPortsManager _serialPortsManager;
+        private HashSet<ModbusMasterConnectionSettings> _lostConnections = new();
 
         public IModbusDevice CreateModbusDevice(ModbusMasterConnectionSettings settings)
         {
@@ -28,18 +28,16 @@ namespace Project1.Modbus
         }
 
         public IModbusDevice[] CreateModbusDevices(ModbusMasterConnectionSettings[] settings) =>
-            settings.Select(setting => CreateModbusDevice(setting)).ToArray();
+            settings.Select(CreateModbusDevice).ToArray();
 
         private IModbusDevice CreateTCP(ModbusMasterConnectionSettings settings)
         {
-            var client = new System.Net.Sockets.TcpClient();
-            var ipAddress = IPAddress.Parse(settings.Address);
             var portParseSuccess = int.TryParse(settings.Port, out var port);
-            client.Connect(ipAddress, portParseSuccess ? port : 502);
+            var client = new System.Net.Sockets.TcpClient();
+            client.Connect(settings.Address, portParseSuccess ? port : 502);
             var modbusMaster = ModbusIpMaster.CreateIp(client);
             modbusMaster.Transport.Retries = 0;
             modbusMaster.Transport.ReadTimeout = 1500;
-
             return new ModbusDeviceTCP(modbusMaster, settings);
         }
 
@@ -60,6 +58,15 @@ namespace Project1.Modbus
             return new ModbusDeviceSerial(modbusMaster, settings);
         }
 
+        public void ReconnectLostConnections()
+        {
+            foreach(var lostConnetion in _lostConnections)
+            {
+                _lostConnections.Remove(lostConnetion);
+                CreateModbusDevice(lostConnetion);
+            }
+        }
+
         public async Task<ushort[]> ReadRegisters(int connectionId, ushort startAddress, ushort length = 1)
         {
             var existing = _existingModbusDevices.SingleOrDefault(device => device.Id == connectionId);
@@ -67,7 +74,17 @@ namespace Project1.Modbus
             if (existing == null)
                 return null;
 
-            return await existing.ReadRegistersAsync(startAddress, length);
+            try
+            {
+                var result = await existing.ReadRegistersAsync(startAddress, length);
+                return result;
+            }
+            catch (Exception ex)
+            {
+                _lostConnections.Add(existing.Settings);
+                CloseConnection(existing.Id);
+                return null;
+            }
         }
 
         public async Task<bool> WriteRegister(int connectionId, ushort startAddress, ushort data) =>
@@ -80,8 +97,17 @@ namespace Project1.Modbus
             if (existing == null)
                 return false;
 
-            await existing.WriteRegistersAsync(startAddress, data);
-            return true;
+            try
+            {
+                await existing.WriteRegistersAsync(startAddress, data);
+                return true;
+            }
+            catch(Exception ex)
+            {
+                _lostConnections.Add(existing.Settings);
+                CloseConnection(existing.Id);
+                return false;
+            }
         }
 
         public void CloseConnection(int id)

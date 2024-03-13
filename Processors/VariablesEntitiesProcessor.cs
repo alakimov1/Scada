@@ -19,10 +19,11 @@ namespace Project1.Processors
             _variableEntities = await _databaseWorker.ReadVariablesEntities();
         }
 
-        public List<Subgroup> GetSubgroups => _variableEntities.Select(_ => _.Subgroup).Distinct().ToList();
+        public List<Subgroup> GetSubgroups => 
+            _variableEntities.Select(_ => _.Subgroup).Distinct().OrderBy(_ => _.Id).ToList();
 
         public List<Group> GetGroups => 
-            _variableEntities.Select(_ => _.Subgroup).Distinct().Select(_=>_.Group).Distinct().ToList();
+            _variableEntities.Select(_ => _.Subgroup).Distinct().Select(_=>_.Group).Distinct().OrderBy(_ => _.Id).ToList();
 
         public List<VariableEntity> GetVariablesEntities => _variableEntities;
 
@@ -33,7 +34,8 @@ namespace Project1.Processors
                 .Where(_ => _.Subgroup != null && _.Subgroup?.Id != null && ids.Contains((int)_.Subgroup?.Id))
                 .ToList();
 
-        public List<Subgroup> GetSubgroupsByGroup(int id) => GetSubgroups.Where(_ => _.Group.Id == id).ToList();
+        public List<Subgroup> GetSubgroupsByGroup(int id) => 
+            GetSubgroups.Where(_ => _.Group.Id == id).OrderBy(_ => _.Id).ToList();
 
         public List<VariableEntity> GetVariableEntitiesByGroup(int id) => 
             _variableEntities.Where(_ => _.Subgroup.Group.Id == id).ToList();

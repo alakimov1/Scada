@@ -14,7 +14,7 @@ namespace Project1.Processors
         public TrendsProcessor? TrendsProcessor { get; private set; }
         public EventsProcessor? EventsProcessor { get; private set; }
         public VariablesEntitiesProcessor? VariablesEntitiesProcessor { get; private set; }
-
+        public VariableValuesSubstitutor? VariableValuesSubstitutor { get; private set; }
         private static bool _initializationInProcess = false;
 
         public async static Task Init()
@@ -34,6 +34,8 @@ namespace Project1.Processors
             _variables = VariablesEntitiesProcessor.GetVariables();
             _connectionProcessor = new PLCConnectionProcessor(_databaseWorker);
             await _connectionProcessor.Init(_variables.ToArray());
+            VariableValuesSubstitutor = new VariableValuesSubstitutor(_databaseWorker);
+            await VariableValuesSubstitutor.Init(_variables);
             TrendsProcessor = new TrendsProcessor(_databaseWorker, _variables);
             EventsProcessor = new EventsProcessor(_databaseWorker);
             await EventsProcessor.Init(_variables);
@@ -90,7 +92,7 @@ namespace Project1.Processors
             return variablesChanged;
         }
 
-        public (int Id, object Value)[] GetVariablesValues(int[]? ids = null)
+        public (int Id, object? Value)[] GetVariablesValues(int[]? ids = null)
         {
             if (_variables == null || ids == null || ids.Count() == 0)
                 return null;
@@ -98,7 +100,14 @@ namespace Project1.Processors
             var idsToReturn = ids.Where(id => _variables.Any(_ => _.Id == id && _.Value != null));
 
             return idsToReturn
-                .Select(id => (id, _variables.First(variable => variable.Id == id).Value))
+                .Select(id => 
+                {
+                    var value = _variables.First(variable => variable.Id == id).Value;
+                    var substituteValue = VariableValuesSubstitutor != null && value != null
+                    ? VariableValuesSubstitutor.Substitute(id, value)
+                    : value;
+                    return (id, substituteValue);
+                })
                 .ToArray();
         }
 

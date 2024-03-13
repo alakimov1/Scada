@@ -13,8 +13,11 @@ namespace Project1
     {
         public static void Main(string[] args)
         {
-            var builder = WebApplication.CreateBuilder(args);
-            builder.Host.UseWindowsService().UseContentRoot(AppContext.BaseDirectory);
+            var options = new WebApplicationOptions() { 
+                ContentRootPath = AppContext.BaseDirectory
+            };
+            var builder = WebApplication.CreateBuilder(options);
+            //builder.Host.UseWindowsService().UseContentRoot();
 
             builder.Services.AddCors(options => 
                 options.AddDefaultPolicy(

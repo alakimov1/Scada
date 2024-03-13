@@ -23,7 +23,7 @@ namespace Project1.Modbus
             await _master.ReadCoilsAsync(startAddress, length);
 
         public async Task<ushort[]> ReadRegistersAsync(ushort startAddress, ushort length = 1) =>
-            await _master.ReadHoldingRegistersAsync(startAddress, length);
+            await _master.ReadHoldingRegistersAsync(1, startAddress, length);
 
         public async Task WriteCoilsAsync(ushort startAddress, bool[] data)
         {

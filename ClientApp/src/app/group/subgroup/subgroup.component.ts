@@ -32,6 +32,7 @@ export class SubgroupComponent {
     private httpService: HttpService,
     private errorService: ErrorService) {
     this.busyRefreshingVariables = false;
+    //ToDo: вместо интервала дожидаться ответа
     this.refreshVariablesSub = interval(200).subscribe((func => {
       if (this.subgroupSelected && !this.busyRefreshingVariables) {
         this.refreshVariablesValues();
@@ -46,20 +47,20 @@ export class SubgroupComponent {
   refreshVariablesValues() {
     if (!this.variableEntities)
       return;
-
     this.busyRefreshingVariables = true;
-    this.httpService.getVariablesValues(this.variableEntities.map(_ => _.variable.id)).then((variables :[number, any][]) => {
-      if (variables) {
-        variables?.forEach(variable => {
-          this.variableEntities?.filter(entity =>
-            !entity.writable && entity?.variable?.id == variable[0]
-          )?.forEach(
-            entity => entity.variable.value = variable[1]
-          );
-        });
-        this.busyRefreshingVariables = false;
-      }
-    })
+    this.httpService.getVariablesValues(this.variableEntities.map(_ => _.variable.id))
+      .then(variables => {
+        if (variables) {
+          variables?.forEach((variable: any) => {
+            this.variableEntities?.filter(entity =>
+              !entity.writable && entity?.variable?.id == variable.id
+            )?.forEach(
+              entity => entity.variable.value = variable.value
+            );
+          });
+          this.busyRefreshingVariables = false;
+        }
+      })
       .catch(ex => {
         this.errorService.handle(ex.message);
         this.busyRefreshingVariables = false;

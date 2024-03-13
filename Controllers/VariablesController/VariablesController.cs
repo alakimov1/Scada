@@ -45,7 +45,9 @@ namespace Project1.Controllers.VariablesController
                 if (_processor == null)
                     return StatusCode(StatusCodes.Status500InternalServerError);
 
-                var result = _processor.GetVariablesValues(ids);
+                var result = _processor
+                    .GetVariablesValues(ids)
+                    .Select(v => new { v.Id, v.Value });
 
                 return result == null
                     ? new NotFoundResult()

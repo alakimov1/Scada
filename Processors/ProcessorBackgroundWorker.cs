@@ -10,6 +10,7 @@ namespace Project1.Processors
         }
 
         private Timer? _timer = null;
+        private bool _processIsBusy = false;
 
         public Task StartAsync(CancellationToken stoppingToken)
         {
@@ -17,12 +18,17 @@ namespace Project1.Processors
                 _process,
                 null,
                 TimeSpan.Zero,
-                TimeSpan.FromSeconds(5));
+                TimeSpan.FromSeconds(1));
             return Task.CompletedTask;
         }
 
         private async void _process(object? state)
         {
+            if (_processIsBusy)
+                return;
+
+            _processIsBusy = true;
+
             try
             {
                 await Processor.Process();
@@ -30,6 +36,10 @@ namespace Project1.Processors
             catch(Exception ex)
             {
                 Log.Error($"{ex.Message}{Environment.NewLine}{ex.StackTrace}");
+            }
+            finally
+            { 
+                _processIsBusy = false; 
             }
         }
 

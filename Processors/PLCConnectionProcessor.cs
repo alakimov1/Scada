@@ -32,12 +32,12 @@ namespace Project1.Processors
             var maxRegisterAddressByConnections = GetMaxRegisterAddressByConnection(variables);
             _minAndLengthRegisterAddressByConnections = minRegisterAddressByConnections.ToDictionary(
                 x => x.Key,
-                x => (x.Value, (ushort)(maxRegisterAddressByConnections[x.Key] - x.Value)));
+                x => (x.Value, (ushort)(maxRegisterAddressByConnections[x.Key] - x.Value + 1)));
         }
 
         public async Task ReadVariables(List<Variable> variables)
         {
-            _registersByConnections = await GetRegistersByConnections(variables);
+            _registersByConnections = await GetRegistersByConnections();
             
             foreach (var variable in variables)
                 GetVariableValueFromRegisters(variable);
@@ -62,11 +62,16 @@ namespace Project1.Processors
         private async Task<Dictionary<int, ushort[]>> GetRegistersByConnections()
         {
             var registersByConnection = new Dictionary<int, ushort[]>();
+            _modbusService.ReconnectLostConnections();
 
             foreach (var addressByConnection in _minAndLengthRegisterAddressByConnections)
             {
                 var registers = await _modbusService.ReadRegisters(
                     addressByConnection.Key, addressByConnection.Value.Min, addressByConnection.Value.Length);
+
+                if (registers is null || registers.Length == 0)
+                    continue;
+
                 registersByConnection.Add(addressByConnection.Key, registers);
             }
 

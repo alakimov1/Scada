@@ -1,4 +1,4 @@
 ﻿namespace Project1.Modbus.Models
 {
-    public enum ConnectionTypeEnum { TCP, RTU, ASCII }
+    public enum ConnectionTypeEnum { TCP = 1, RTU, ASCII }
 }

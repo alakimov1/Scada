@@ -17,7 +17,7 @@ namespace Project1.Modbus
         public static byte ToByteFromRegisters(ushort[] registers, int address, ushort startAddress) =>
             (byte)(registers[address - startAddress] % 256);
 
-        public static short ToWordFromRegisters(ushort[] registers, int address, ushort startAddress) =>
+        public static short ToWordFromRegisters(ushort[] registers, int address, ushort startAddress) => 
             BitConverter.ToInt16(new Span<byte>(GetBytesFromRegister(registers[address - startAddress])));
 
         public static int ToDWordFromRegisters(ushort[] registers, int address, ushort startAddress) =>

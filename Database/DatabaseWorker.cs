@@ -23,19 +23,18 @@ namespace Project1.Database
 
         public async Task<bool> WriteVariableValue(Variable variable)
         {
-            var connection = new SqliteConnection(_connectionString);
+            using var connection = new SqliteConnection(_connectionString);
             await connection.OpenAsync();
             var command = connection.CreateCommand();
             command.CommandText = _getCommandUpdateVariable(variable);
             var result = command.ExecuteNonQuery() > 0;
-            await connection.DisposeAsync();
 
             return result;
         }
 
         public async Task<int> WriteVariablesValues(List<Variable> variables) 
         {
-            var connection = new SqliteConnection(_connectionString);
+            using var connection = new SqliteConnection(_connectionString);
             await connection.OpenAsync();
             var command = connection.CreateCommand();
             command.CommandText = "";
@@ -46,13 +45,12 @@ namespace Project1.Database
             });
             var result = command.ExecuteNonQuery();
 
-            await connection.DisposeAsync();
             return result;
         }
 
         public async Task<List<Variable>> ReadVariables()
         {
-            var connection = new SqliteConnection(_connectionString);
+            using var connection = new SqliteConnection(_connectionString);
             await connection.OpenAsync();
             var variables = new List<Variable>(); 
             var command = connection.CreateCommand();
@@ -75,43 +73,35 @@ namespace Project1.Database
                     });
             }
 
-            await connection.DisposeAsync();
             return variables;
         }
 
         public async Task<bool> ReadVariableValue(Variable variable) 
         {
-            var connection = new SqliteConnection(_connectionString);
+            using var connection = new SqliteConnection(_connectionString);
             await connection.OpenAsync();
             var command = connection.CreateCommand();
             command.CommandText = $"SELECT value FROM variables WHERE id={variable.Id};";
             var reader = command.ExecuteReader();
 
             if (!reader.HasRows)
-            {
-                await connection.DisposeAsync();
                 return false;
-            }
 
             reader.Read();
             variable.Value = ValuesParsing.Parse(reader.GetString(0), variable.Type);
-            await connection.DisposeAsync();
             return true;
         }
 
         public async Task<bool> ReadVariablesValues(Variable[] variables)
         {
-            var connection = new SqliteConnection(_connectionString);
+            using var connection = new SqliteConnection(_connectionString);
             await connection.OpenAsync();
             var command = connection.CreateCommand();
             command.CommandText = $"SELECT id, value FROM variables;";
             var reader = command.ExecuteReader();
 
             if (!reader.HasRows)
-            {
-                await connection.DisposeAsync();
                 return false;
-            }
 
             while (reader.Read())
             {
@@ -121,23 +111,19 @@ namespace Project1.Database
                 variable.Value = ValuesParsing.Parse(value, variable?.Type);
             }
 
-            await connection.DisposeAsync();
             return true;
         }
 
         public async Task<List<Group>> ReadGroups()
         {
-            var connection = new SqliteConnection(_connectionString);
+            using var connection = new SqliteConnection(_connectionString);
             await connection.OpenAsync();
             var command = connection.CreateCommand();
             command.CommandText = $"SELECT id, name FROM groups;";
             var reader = command.ExecuteReader();
 
             if (!reader.HasRows)
-            {
-                await connection.DisposeAsync();
                 return null;
-            }
 
             var groups = new List<Group>();
 
@@ -148,7 +134,6 @@ namespace Project1.Database
                 groups.Add(new Group() { Id = id, Name = name });
             }
 
-            await connection.DisposeAsync();
             return groups;
         }
 
@@ -156,17 +141,14 @@ namespace Project1.Database
         {
             var groups = await ReadGroups();
 
-            var connection = new SqliteConnection(_connectionString);
+            using var connection = new SqliteConnection(_connectionString);
             await connection.OpenAsync();
             var command = connection.CreateCommand();
             command.CommandText = $"SELECT id, name, \"group\" FROM subgroups;";
             var reader = command.ExecuteReader();
 
             if (!reader.HasRows)
-            {
-                await connection.DisposeAsync();
                 return null;
-            }
 
             var subgroups = new List<Subgroup>();
 
@@ -181,7 +163,6 @@ namespace Project1.Database
                     );
             }
 
-            await connection.DisposeAsync();
             return subgroups;
         }
 
@@ -190,17 +171,14 @@ namespace Project1.Database
             var subgroups = await ReadSubgroups();
             var variables = await ReadVariables();
 
-            var connection = new SqliteConnection(_connectionString);
+            using var connection = new SqliteConnection(_connectionString);
             await connection.OpenAsync();
             var command = connection.CreateCommand();
             command.CommandText = $"SELECT variable, subgroup, writable, id FROM variables_entity;";
             var reader = command.ExecuteReader();
 
             if (!reader.HasRows)
-            {
-                await connection.DisposeAsync();
                 return null;
-            }
 
             var variablesEntities = new List<VariableEntity>();
 
@@ -221,8 +199,47 @@ namespace Project1.Database
                 );
             }
 
-            await connection.DisposeAsync();
             return variablesEntities;
+        }
+
+        public async Task<List<VariableValueDictionary>> ReadVariableValueDictionaries(List<Variable> variables)
+        {
+            using var connection = new SqliteConnection(_connectionString);
+            await connection.OpenAsync();
+            var dictionary = new List<VariableValueDictionary>();
+            var command = connection.CreateCommand();
+            command.CommandText = $"SELECT * FROM variables_values_dictionary";
+            var reader = command.ExecuteReader();
+
+            while (reader.Read())
+            {
+                var variableId = reader.GetInt32(0);
+                var variable = variables.FirstOrDefault(variable => variable.Id == variableId);
+
+                if (variable == null)
+                    continue;
+
+                var key = ValuesParsing.Parse(reader.GetString(1), variable.Type);
+                var value = ValuesParsing.Parse(reader.GetString(2), variable.Type);
+
+                var variableValueDictionary = dictionary.FirstOrDefault(_ => _.Variable.Id == variableId);
+
+                if (variableValueDictionary == null)
+                {
+                    variableValueDictionary = new VariableValueDictionary()
+                    {
+                        Variable = variable,
+                        Dictionary = new Dictionary<object, object>()
+                    };
+
+                    dictionary.Add(variableValueDictionary);
+                }
+
+                if (!variableValueDictionary.Dictionary.Keys.Any(_ => _.Equals(key)))
+                    variableValueDictionary.Dictionary.Add(key, value);
+            }
+
+            return dictionary;
         }
     }
 }

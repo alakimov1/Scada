@@ -60,7 +60,7 @@ namespace Project1.Processors
             foreach (var ev in _events)
             {
                 var eventFired = ev.Check();
-                var eventHistories = _eventsHistories?.Where(_ => _.Event == ev);
+                var eventHistories = _eventsHistories?.Where(_ => _.Event.Id == ev.Id);
 
                 if (eventFired
                     && (eventHistories == null

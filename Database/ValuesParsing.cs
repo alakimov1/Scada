@@ -8,13 +8,24 @@ namespace Project1.Database
         public static object Parse(string value, VariableType? type) =>
             type switch
             {
-                VariableType.Bool => bool.Parse(value),
+                VariableType.Bool => ParseBool(value),
                 VariableType.Byte => byte.Parse(value),
                 VariableType.Word => short.Parse(value),
                 VariableType.Dword => int.Parse(value),
                 VariableType.Real => double.Parse(value),
                 _ => value
             };
+
+        private static bool ParseBool(string value)
+        {
+            if (bool.TryParse(value, out bool result))
+                return result;
+
+            if (int.TryParse(value, out int intResult) && intResult >0)
+                return true;
+
+            return false;
+        }
 
         public static bool TryParse(string value, VariableType? type, out object result)
         {
